@@ -99,6 +99,34 @@
     .summary-table .fee { color:#0b5f59; font-weight:850; white-space:nowrap; }
     .summary-table .ratio { color:#9a5b13; font-weight:800; white-space:nowrap; }
     .summary-table small { color:#687773; }
+    .primary-tab { width:100%; border:1px solid #cfe1dd; background:#fffdf8; color:#20302f; text-align:left; padding:13px 12px; border-radius:12px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font:inherit; font-weight:800; }
+    .primary-tab:hover { background:#edf6f2; }
+    .primary-tab.active { background:#0f766e; color:#fff; border-color:#0f766e; }
+    .primary-tab .chevron { font-size:18px; transition:transform .18s ease; }
+    .primary-tab.active .chevron { transform:rotate(90deg); }
+    .detail-subtabs { margin-top:8px; max-height:760px; overflow:hidden; opacity:1; transform:translateY(0); transition:max-height .34s ease, opacity .24s ease, transform .34s ease, margin-top .34s ease; }
+    .detail-subtabs.collapsed { max-height:0; margin-top:0; opacity:0; transform:translateY(-10px); pointer-events:none; }
+    .quick-panel { padding:24px; }
+    .quick-panel[hidden] { display:none; }
+    .quick-intro { margin:0 0 18px; color:#687773; line-height:1.7; }
+    .quick-inputs { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    .quick-field { padding:16px; border:2px solid #b7cfc7; border-radius:14px; background:#fcfaf3; box-shadow:inset 4px 0 0 #0f766e; }
+    .quick-field label { display:block; margin-bottom:8px; font-weight:800; color:#20302f; }
+    .quick-field input { width:100%; padding:11px 12px; border:1px solid #b7cfc7; border-radius:9px; font:inherit; font-size:18px; background:#fffdf8; }
+    .quick-field input:focus { outline:2px solid rgba(15,118,110,.22); border-color:#0f766e; }
+    .quick-field small { display:block; margin-top:7px; color:#687773; line-height:1.45; }
+    .quick-total { margin-top:20px; padding:20px; border-radius:16px; background:#0f766e; color:#fff; }
+    .quick-total h3 { margin:0 0 6px; color:#dff5ef; font-size:15px; }
+    .quick-total strong { font-size:34px; letter-spacing:.02em; }
+    .quick-total span { color:#dff5ef; }
+    .quick-results { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; }
+    .quick-result { padding:16px; border:1px solid #d8e0dc; border-radius:13px; background:#fffdf8; }
+    .quick-result .label { color:#687773; font-size:13px; }
+    .quick-result .value { margin-top:7px; color:#0b5f59; font-size:22px; font-weight:850; }
+    .quick-result small { display:block; margin-top:7px; color:#687773; line-height:1.45; }
+    .quick-footnote { margin:18px 0 0; padding:13px 15px; border-left:4px solid #e2a84b; border-radius:8px; background:#fff7e6; color:#7b5a25; line-height:1.6; font-size:13px; }
+    @media(max-width:1000px){.quick-inputs{grid-template-columns:repeat(2,1fr)}.quick-results{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:700px){.quick-panel{padding:16px}.quick-inputs,.quick-results{grid-template-columns:1fr}}
     @media(max-width:700px){.summary-panel{padding:12px}.summary-card{padding:16px;max-height:calc(100vh - 24px)}.summary-head{align-items:center}}
   </style>
 </head>
@@ -114,27 +142,44 @@
   <main class="shell">
     <div class="workspace">
       <nav class="sidebar" aria-label="计算器选项卡">
-        <div class="side-title">计算工具（9 项）</div>
+        <div class="side-title">费用测算方式</div>
+        <button class="primary-tab" id="detailToggle" type="button" aria-expanded="false"><span>二类费详细测算</span><span class="chevron">›</span></button>
+        <div class="tool-list detail-subtabs collapsed" id="toolList"></div>
+        <button class="primary-tab" id="quickToggle" type="button" aria-expanded="false"><span>快速测算</span><span class="chevron">›</span></button>
         <button class="summary-button" id="summaryButton" type="button">一键查看测算汇总</button>
-        <div class="tool-list" id="toolList"></div>
       </nav>
 
       <section class="viewer" aria-live="polite">
-        <div class="viewer-head">
+        <div id="detailView">
+          <div class="viewer-head">
           <div>
             <h2 class="current-title" id="currentTitle"></h2>
             <p class="current-note" id="currentNote"></p>
           </div>
           <a class="open-link" id="openLink" target="_blank" rel="noopener">单独打开 ↗</a>
+          </div>
+          <iframe id="calculatorFrame" title="计算器内容"></iframe>
         </div>
-        <iframe id="calculatorFrame" title="计算器内容"></iframe>
+        <section class="quick-panel" id="quickPanel" hidden>
+          <h2 class="current-title">快速测算</h2>
+          <p class="quick-intro">填写几个项目基础数字，快速查看多项二类费用的参考结果。这里采用上海项目常用的前期估算口径，正式计费请进入左侧“二类费详细测算”逐项核对。</p>
+          <div class="quick-inputs">
+            <div class="quick-field"><label for="quickInvestment">项目总投资（万元）</label><input id="quickInvestment" type="number" min="0" step="0.01" value="5000"><small>建设单位管理费、前期咨询费、环评费的主要基数。</small></div>
+            <div class="quick-field"><label for="quickConstruction">建安费（万元）</label><input id="quickConstruction" type="number" min="0" step="0.01" value="4000"><small>勘察、监理、招标代理、造价咨询的常用估算基数。</small></div>
+            <div class="quick-field"><label for="quickDesign">设计计费额（万元）</label><input id="quickDesign" type="number" min="0" step="0.01" value="5000"><small>工程设计费按设计计费额参考估算。</small></div>
+            <div class="quick-field"><label for="quickArea">建筑面积（㎡）</label><input id="quickArea" type="number" min="0" step="0.01" value="1000"><small>房屋检测鉴定费按建筑面积快速估算。</small></div>
+          </div>
+          <div class="quick-total"><h3>快速测算合计</h3><strong id="quickTotal">0.00</strong> <span>万元</span></div>
+          <div class="quick-results" id="quickResults"></div>
+          <p class="quick-footnote">提示：快速测算是前期估算工具，不替代各详细计算器中的国家、上海或浦东具体依据。设计复杂程度、勘察实物工作量、监理服务范围等因素，仍需在详细页面补充。</p>
+        </section>
       </section>
     </div>
   </main>
 
   <section class="summary-panel" id="summaryPanel" aria-hidden="true">
     <div class="summary-card">
-      <div class="summary-head"><div><h2>9项费用测算汇总</h2><p class="summary-lead">统一示例：以常见房建/市政项目为背景，展示计算基数、测算费用、费用占基数比例、公式和参考依据。正式项目请替换为实际批复或合同数据。</p></div><button class="summary-close" id="summaryClose" type="button">关闭</button></div>
+      <div class="summary-head"><div><h2>11项费用测算汇总</h2><p class="summary-lead">统一示例：以常见房建/市政项目为背景，展示计算基数、测算费用、费用占基数比例、公式和参考依据。正式项目请替换为实际批复或合同数据。</p></div><button class="summary-close" id="summaryClose" type="button">关闭</button></div>
       <div id="summaryContent"></div>
     </div>
   </section>
@@ -149,14 +194,21 @@
       { name: '工程造价咨询费', file: '工程造价咨询费计算器.html', desc: '上海/行业 · 投资估算/预算/审核' },
       { name: '前期工作咨询费', file: '前期工作咨询费计算器.html', desc: '国家前期咨询参考' },
       { name: '房屋检测鉴定费', file: '房屋检测鉴定费计算器.html', desc: '上海房屋检测指导价' },
-      { name: '环境影响评价费', file: '环境影响评价费计算器.html', desc: '国家环评咨询参考' }
+      { name: '环境影响评价费', file: '环境影响评价费计算器.html', desc: '国家环评咨询参考' },
+      { name: 'BIM技术服务费', file: 'BIM技术服务费计算器.html', desc: '上海特色 · 建筑面积 + 应用深度' },
+      { name: '场地准备及临时设施费', file: '场地准备及临时设施费计算器.html', desc: '建设单位承担部分 · 参考比例法' }
     ];
     const list = document.getElementById('toolList');
     const frame = document.getElementById('calculatorFrame');
     const title = document.getElementById('currentTitle');
     const note = document.getElementById('currentNote');
     const openLink = document.getElementById('openLink');
-
+    const detailView = document.getElementById('detailView');
+    const detailToggle = document.getElementById('detailToggle');
+    const quickToggle = document.getElementById('quickToggle');
+    const quickPanel = document.getElementById('quickPanel');
+    const detailSubtabs = document.getElementById('toolList');
+    const quickInputs = ['quickInvestment','quickConstruction','quickDesign','quickArea'].map(id => document.getElementById(id));
     const summaryRows = [
       {name:'建设单位管理费',basis:'[国家] 财建〔2016〕504号',base:'项目计费基数：5000万元',fee:80,ratio:'1.60%',formula:'1000×2%＋4000×1.5%＝80万元',source:'财政部《基本建设项目建设成本管理规定》'},
       {name:'工程设计费',basis:'[国家] 计价格〔2002〕10号',base:'设计计费额：5000万元',fee:163.9,ratio:'3.28%',formula:'国家设计基价163.9×专业1.0×复杂1.0×附加1.0＝163.9万元',source:'《工程勘察设计收费管理规定》；现行价格按合同市场化'},
@@ -166,7 +218,9 @@
       {name:'工程造价咨询费',basis:'[上海] 沪建计联〔2005〕834号、沪价费〔2005〕056号',base:'全过程造价控制基数：5000万元',fee:40.25,ratio:'0.81%',formula:'分段差额定率累进：1.10%/1.00%/0.85%/0.80%/0.75%＝40.25万元',source:'上海造价服务和招标代理服务收费标准；市场合同参考'},
       {name:'前期工作咨询费',basis:'[国家] 计价格〔1999〕1283号',base:'项目总投资：5000万元',fee:7.6,ratio:'0.15%',formula:'1000×0.20%＋4000×0.14%＝7.60万元',source:'《建设项目前期工作咨询收费暂行规定》'},
       {name:'房屋检测鉴定费',basis:'[上海] 沪建交〔2013〕201号',base:'建筑面积：1000㎡',fee:2.2,ratio:'不适用',formula:'1000㎡×22元/㎡＝22000元＝2.20万元',source:'上海政府投资项目检测收费管理规定；按面积计费，比例不直接适用'},
-      {name:'环境影响评价费',basis:'[国家] 计价格〔2002〕125号',base:'项目总投资：5000万元',fee:4.89,ratio:'0.10%',formula:'300×0.15%＋1700×0.12%＋3000×0.08%＝4.89万元',source:'《关于规范环境影响咨询收费有关问题的通知》；现行价格按市场合同'}
+      {name:'环境影响评价费',basis:'[国家] 计价格〔2002〕125号',base:'项目总投资：5000万元',fee:4.89,ratio:'0.10%',formula:'300×0.15%＋1700×0.12%＋3000×0.08%＝4.89万元',source:'《关于规范环境影响咨询收费有关问题的通知》；现行价格按市场合同'},
+      {name:'BIM技术服务费',basis:'[上海] 上海市建筑信息模型(BIM)技术服务收费标准（团体标准）',base:'建筑面积：10000㎡',fee:15,ratio:'不适用',formula:'10000㎡×15元/㎡＝15.00万元（标准应用参考）',source:'上海市绿色建筑协会发布的 BIM 技术服务收费标准（团体标准）'},
+      {name:'场地准备及临时设施费',basis:'[上海] 上海项目概算编制实务参考（市场化）',base:'建安费：4000万元',fee:40,ratio:'1.00%',formula:'4000×1.00%＝40.00万元（参考比例法）',source:'建设项目投资估算、概算费用组成及项目实际临设方案'}
     ];
     function renderSummary(){
       const rows=summaryRows.map((r,i)=>`<tr><td>${String(i+1).padStart(2,'0')}　${r.name}</td><td>${r.base}</td><td class="fee">${r.fee.toFixed(2)} 万元</td><td class="ratio">${r.ratio}</td><td>${r.formula}</td><td>${r.basis}<br><small>${r.source}</small></td></tr>`).join('');
@@ -176,10 +230,73 @@
     document.getElementById('summaryClose').addEventListener('click',()=>{const panel=document.getElementById('summaryPanel');panel.classList.remove('open');panel.setAttribute('aria-hidden','true');});
     document.getElementById('summaryPanel').addEventListener('click',event=>{if(event.target.id==='summaryPanel')document.getElementById('summaryClose').click();});
 
+    function quickProgressive(value, bands){
+      let total=0, previous=0;
+      for(const [upper, rate] of bands){
+        if(value>previous) total += (Math.min(value, upper)-previous)*rate/100;
+        if(value<=upper) return total;
+        previous=upper;
+      }
+      const last=bands[bands.length-1];
+      return total + Math.max(0,value-previous)*last[1]/100;
+    }
+    function renderQuick(){
+      const investment=Number(document.getElementById('quickInvestment').value)||0;
+      const construction=Number(document.getElementById('quickConstruction').value)||0;
+      const designBase=Number(document.getElementById('quickDesign').value)||0;
+      const area=Number(document.getElementById('quickArea').value)||0;
+      const fees=[
+        ['建设单位管理费',quickProgressive(investment,[[1000,2],[5000,1.5],[10000,1.2],[50000,1],[100000,.8],[200000,.6]]),'按总投资分档差额累进'],
+        ['工程设计费',designBase*.03278,'设计计费额×3.278%参考'],
+        ['工程勘察费',construction*.008,'建安费×0.80%比例估算'],
+        ['工程监理费',construction*.029,'建安费×2.90%参考'],
+        ['工程招标代理费',quickProgressive(construction,[[1000,.31],[5000,.285],[10000,.26],[50000,.2],[100000,.15]]),'建安费分段差额定率累进'],
+        ['工程造价咨询费',quickProgressive(construction,[[1000,1.1],[3000,1],[5000,.85],[10000,.8],[50000,.75]]),'建安费分段差额定率累进'],
+        ['前期工作咨询费',quickProgressive(investment,[[1000,.2],[5000,.14],[10000,.1],[50000,.05]]),'总投资分段差额累进参考'],
+        ['房屋检测鉴定费',area*22/10000,'建筑面积×22元/㎡参考'],
+        ['环境影响评价费',quickProgressive(investment,[[300,.15],[2000,.12],[5000,.08],[10000,.05]]),'总投资分段差额累进参考'],
+        ['BIM技术服务费',area*15/10000,'建筑面积×15元/㎡（标准应用参考）'],
+        ['场地准备及临时设施费',construction*.01,'建安费×1.00%（建设单位承担部分参考）']
+      ];
+      const total=fees.reduce((sum,item)=>sum+item[1],0);
+      document.getElementById('quickTotal').textContent=total.toFixed(2);
+      document.getElementById('quickResults').innerHTML=fees.map(item=>`<div class="quick-result"><div class="label">${item[0]}</div><div class="value">${item[1].toFixed(2)} 万元</div><small>${item[2]}</small></div>`).join('');
+    }
+    function showQuick(){
+      detailView.hidden=true;
+      quickPanel.hidden=false;
+      detailSubtabs.classList.add('collapsed');
+      detailToggle.classList.remove('active');
+      detailToggle.setAttribute('aria-expanded','false');
+      quickToggle.classList.add('active');
+      quickToggle.setAttribute('aria-expanded','true');
+      renderQuick();
+      history.replaceState(null,'','#quick');
+    }
+    function showDetail(expand=false){
+      detailView.hidden=false;
+      quickPanel.hidden=true;
+      if(expand) detailSubtabs.classList.remove('collapsed');
+      const expanded=!detailSubtabs.classList.contains('collapsed');
+      detailToggle.classList.toggle('active',expanded);
+      detailToggle.setAttribute('aria-expanded',expanded ? 'true' : 'false');
+      quickToggle.classList.remove('active');
+      quickToggle.setAttribute('aria-expanded','false');
+    }
+    detailToggle.addEventListener('click',()=>{
+      if(!quickPanel.hidden){showDetail(true);showTool(Number(location.hash.slice(1))||0);return;}
+      const collapse=!detailSubtabs.classList.contains('collapsed');
+      if(collapse){detailSubtabs.classList.add('collapsed');detailToggle.classList.remove('active');detailToggle.setAttribute('aria-expanded','false');}
+      else showDetail(true);
+    });
+    quickToggle.addEventListener('click',showQuick);
+    quickInputs.forEach(input=>input.addEventListener('input',renderQuick));
+
     function styleCalculator() {
       try {
         const doc = frame.contentDocument;
-        if (!doc || doc.getElementById('collection-box-theme')) return;
+        if (!doc) return;
+        if (doc.getElementById('collection-box-theme')) return;
         const style = doc.createElement('style');
         style.id = 'collection-box-theme';
         style.textContent = `
@@ -236,6 +353,7 @@
     }
 
     function showTool(index) {
+      showDetail(false);
       const tool = tools[index];
       document.querySelectorAll('.tool-tab').forEach((button, i) => {
         button.classList.toggle('active', i === index);
@@ -243,10 +361,12 @@
       });
       title.textContent = tool.name;
       note.textContent = tool.desc;
+      frame.hidden=false;
+      openLink.style.display='';
       openLink.href = encodeURI(tool.file);
       frame.title = tool.name;
-      frame.src = encodeURI(tool.file);
       frame.onload = styleCalculator;
+      frame.src = encodeURI(tool.file);
       history.replaceState(null, '', '#' + index);
     }
 
@@ -259,8 +379,11 @@
       button.addEventListener('click', () => showTool(index));
       list.appendChild(button);
     });
-    const initialIndex = Math.min(Math.max(parseInt(location.hash.slice(1), 10) || 0, 0), tools.length - 1);
-    showTool(initialIndex);
+    if(location.hash === '#quick') showQuick();
+    else {
+      const initialIndex = Math.min(Math.max(parseInt(location.hash.slice(1), 10) || 0, 0), tools.length - 1);
+      showTool(initialIndex);
+    }
   </script>
 </body>
 </html>
