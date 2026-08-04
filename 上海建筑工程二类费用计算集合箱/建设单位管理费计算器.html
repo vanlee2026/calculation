@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>建设单位管理费与代建管理费计算器</title>
+  <style>
+    :root{--color-ink:#172033;--color-muted:#667085;--color-line:#dfe6f0;--color-panel:#fff;--color-page:#f4f7fb;--color-accent:#2563eb;--color-accent-dark:#1d4ed8;--color-accent-soft:#eff5ff;--color-warn:#a16207;--color-warn-soft:#fffbeb;--font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;overflow-x:clip}
+    body{font-family:var(--font-ui);background:var(--color-page);color:var(--color-ink);padding:28px;line-height:1.55}
+    .container{max-width:1050px;margin:0 auto;background:var(--color-panel);border:1px solid var(--color-line);border-radius:18px;box-shadow:0 12px 30px rgba(23,32,51,.07);padding:28px}
+    .kicker{margin:0 0 7px;color:var(--color-accent);font-size:12px;font-weight:800;letter-spacing:.12em}
+    h1{font-size:25px;line-height:1.25;margin:0;color:var(--color-ink);letter-spacing:.01em}
+    .subtitle{margin:10px 0 20px;color:var(--color-muted);font-size:13px}
+    .basis-bar{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:14px;padding:16px;border:1px solid #c9dafc;border-radius:14px;background:var(--color-accent-soft);margin-bottom:18px}
+    label{display:block;margin:0 0 7px;font-size:13px;font-weight:750;color:var(--color-ink)}
+    select,input{width:100%;font:inherit;background:#fff;border:1px solid #cbd5e1;border-radius:9px;color:var(--color-ink);min-height:40px;padding:8px 10px}
+    select:focus,input:focus{border-color:var(--color-accent);outline:3px solid rgba(37,99,235,.14)}
+    .basis-summary{font-size:13px;color:#24477f;line-height:1.55;padding-top:22px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:16px}
+    .field{padding:14px;border:1px solid var(--color-line);border-radius:12px;background:#fff}
+    .hint{margin:7px 0 0;font-size:12px;color:var(--color-muted)}
+    .section{margin-top:18px;padding-top:18px;border-top:1px solid var(--color-line)}
+    .section h2{font-size:16px;margin:0 0 12px;color:var(--color-ink)}
+    .result{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin-top:18px;padding:18px;border-radius:14px;background:var(--color-accent-soft);border:1px solid #c9dafc;border-left:4px solid var(--color-accent)}
+    .result-label{font-size:13px;color:#24477f;font-weight:700}.amount{font-size:32px;line-height:1.15;font-weight:850;color:var(--color-accent-dark);margin-top:5px}.amount small{font-size:14px;font-weight:700}
+    .breakdown{font-size:13px;color:#3d4d68;line-height:1.7;border-left:1px solid #c9dafc;padding-left:16px}
+    .breakdown strong{color:var(--color-ink)}
+    .notice{margin-top:16px;padding:12px 14px;border:1px solid #f3d38a;border-radius:10px;background:var(--color-warn-soft);color:var(--color-warn);font-size:12px;line-height:1.65}
+    .source{margin-top:18px;padding-top:15px;border-top:1px solid var(--color-line);font-size:12px;color:var(--color-muted)}
+    .source a{color:var(--color-accent);text-decoration:none}.source a:hover{text-decoration:underline}
+    .table-wrap{overflow-x:auto;margin-top:12px}table{width:100%;border-collapse:collapse;font-size:12px;min-width:650px}th,td{padding:9px 10px;border:1px solid var(--color-line);text-align:center}th{background:var(--color-accent-soft);color:#24477f;font-weight:800}td:first-child,th:first-child{text-align:left}
+    .hidden{display:none!important}
+    @media(max-width:700px){body{padding:14px}.container{padding:17px;border-radius:14px}.basis-bar,.result,.grid{grid-template-columns:1fr}.basis-summary{padding-top:0}.breakdown{border-left:0;border-top:1px solid #c9dafc;padding:12px 0 0}.amount{font-size:28px}h1{font-size:22px}}
+  </style>
+<style id="palette-refresh">:root{--paper:#f4f1e9;--paper-panel:#fffdf8;--teal:#0f766e;--teal-dark:#0b5f59;--teal-soft:#e6f3ef;--amber:#9a5b13;--amber-soft:#fff3df;--ink-refresh:#20302f;--muted-refresh:#687773;--line-refresh:#d8e0dc;--focus-refresh:#b7cfc7}body{background:var(--paper)!important;color:var(--ink-refresh)!important}.container,.box,.card{background:var(--paper-panel)!important;border-color:var(--line-refresh)!important}.basis,.basis-bar{background:var(--teal-soft)!important;border-color:#a9d4c9!important}.basis select,.basis-bar select{border:2px solid var(--teal)!important;background:#fffdf8!important;box-shadow:0 0 0 3px rgba(15,118,110,.10)!important}.field input,.field select,.card input,.card select{border:2px solid var(--focus-refresh)!important;background:#fffdf8!important}.field:has(input[type=number]),.card:has(input[type=number]){box-shadow:inset 4px 0 0 var(--teal);background:#fcfaf3!important}.result,.result-box{background:var(--teal)!important;border-color:var(--teal-dark)!important;color:#fff!important}.result .total,.result .amount,.result .total-fee{color:#fff!important}.result .sub,.result .result-label,.result .breakdown,.result .breakdown strong{color:#e7f6f1!important}.notice{background:var(--amber-soft)!important;border-color:#e5b76b!important;color:var(--amber)!important}.source{color:var(--muted-refresh)!important}.source a{color:var(--teal-dark)!important;font-weight:800}.table th{background:var(--teal-soft)!important;color:var(--teal-dark)!important}button{background:var(--teal)!important;border-color:var(--teal)!important}button:hover{background:var(--teal-dark)!important}h1,h2,h3{color:var(--ink-refresh)!important}</style></head>
+<body>
+  <main class="container">
+    <p class="kicker">SHANGHAI · PUBLIC INVESTMENT COST TOOLS</p>
+    <h1>建设单位管理费与代建管理费计算器</h1>
+    <p class="subtitle">根据项目适用的政策口径，分别测算建设单位管理费、代建管理费或浦东新区代建单位管理费。结果仅作前期测算，最终以项目批复、合同及财政审核口径为准。</p>
+
+    <section class="basis-bar">
+      <div>
+        <label for="basis">计算依据</label>
+        <select id="basis">
+          <option value="central">[国家] 财建〔2016〕504号《基本建设项目建设成本管理规定》</option>
+          <option value="shanghai2025">[上海] 沪发改规范〔2025〕12号《市级建设财力项目代理建设管理办法》</option>
+          <option value="shanghai2016">[上海] 沪发改投〔2016〕70号《部分专业服务费用支出标准管理规定》</option>
+          <option value="pudong2012">[浦东] 沪浦发改投〔2012〕338号《政府投资项目代建单位管理费计费标准》</option>
+        </select>
+      </div>
+      <div class="basis-summary" id="basisSummary"></div>
+      <div class="source basis-source" id="source" style="grid-column:1/-1;margin-top:0;padding-top:10px"></div>
+    </section>
+
+    <section id="commonInputs" class="grid">
+      <div class="field">
+        <label for="investment">项目计费基数（万元）</label>
+        <input id="investment" type="number" min="0" step="0.01" placeholder="例如：5000">
+        <p class="hint" id="investmentHint">504号文：项目审批部门批准的动态投资，扣除土地征用、迁移补偿等取得或租用土地使用权的费用。</p>
+      </div>
+      <div class="field" id="stageField">
+        <label for="stage">工程代建服务阶段</label>
+        <select id="stage">
+          <option value="100">全阶段代建（100%）</option>
+          <option value="25">仅前期技术性工作至可研批复（25%）</option>
+          <option value="10">可研批复至初步设计及概算批复（10%）</option>
+          <option value="65">施工建设及竣工验收阶段（65%）</option>
+        </select>
+        <p class="hint">仅浦东 2012 口径使用；工程管理费按 25%／10%／65% 分阶段计取。</p>
+      </div>
+    </section>
+
+    <section id="pudongInputs" class="section hidden">
+      <h2>浦东新区分项计费输入</h2>
+      <div class="grid">
+        <div class="field"><label for="pudongCategory">项目类别</label><select id="pudongCategory"><option value="municipal">基本市政基础设施</option><option value="bridge">大型桥梁、建筑</option><option value="green">园林绿化、信息化</option></select><p class="hint">浦东 338 号文按类别给出管理费率；大型桥梁、建筑 500 万元以下未列具体费率。</p></div>
+        <div class="field"><label for="engineeringPart">建安费（万元）</label><input id="engineeringPart" type="number" min="0" step="0.01" placeholder="必须填写，不能只填总投资"><p class="hint">338号文：项目总投资用于确定费率，建安费用于计算工程管理费；两者不是同一个基数。</p></div>
+        <div class="field"><label for="relocationPart">前期动拆迁费用（万元）</label><input id="relocationPart" type="number" min="0" step="0.01" placeholder="如不适用填 0"><p class="hint">浦东文件将前期动拆迁管理费单列；本计算器按 1.0%／0.8%分段测算。</p></div>
+        <div class="field"><label for="relocationStage">前期动拆迁服务阶段</label><select id="relocationStage"><option value="100">全阶段（100%）</option><option value="25">仅前期房屋征收等代建服务（25%）</option><option value="75">房屋动拆迁阶段代建服务（75%）</option></select><p class="hint">前期动拆迁管理费按浦东文件另行分阶段计取。</p></div>
+      </div>
+    </section>
+
+    <section class="result" aria-live="polite">
+      <div><div class="result-label" id="resultLabel">测算结果</div><div class="amount" id="amount">0.00 <small>万元</small></div></div>
+      <div class="breakdown" id="breakdown">请输入项目计费基数。</div>
+    </section>
+    <div class="notice" id="notice"></div>
+    <section class="section"><h2>费率表（当前依据）</h2><div class="table-wrap"><table id="rateTable"></table></div></section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const rateRows = {
+      central: [['1000以下','2.00%'],['1001—5000','1.50%'],['5001—10000','1.20%'],['10001—50000','1.00%'],['50001—100000','0.80%'],['100000以上','0.40%']],
+      shanghai2016: [['1000以下','1.50%'],['1001—5000','1.20%'],['5001—10000','1.00%'],['10001—50000','0.80%'],['50001—100000','0.50%'],['100001—200000','0.20%'],['200000以上','0.10%']],
+      shanghai2025: [['1000以下','23万元定额'],['1001—5000','1.80%'],['5001—10000','1.50%'],['10001—50000','1.20%'],['50001—100000','0.75%'],['100001—200000','0.30%'],['200000以上','0.15%']]
+    };
+    const basisInfo = {
+      central:{summary:'国家项目管理费控制口径',hint:'504号文：批准的动态投资，扣除土地征用、迁移补偿等土地取得类费用。',label:'项目建设管理费',notice:'代建制项目：代建管理费由同级财政部门按代建内容核定，原则上不高于项目建设管理费标准；一般不得同时列支两项，确需同时发生时合计不得超过限额。',source:'财政部《基本建设项目建设成本管理规定》（财建〔2016〕504号）。',url:'https://gx.mof.gov.cn/bszn/zhengcefagui/201609/t20160909_2414113.htm'},
+      shanghai2016:{summary:'上海市级建设财力项目（历史口径）',hint:'项目可行性研究报告批复投资，包括建安、其他费用和预备费；非代建单位负责的内容不计入。',label:'上海市级代建管理费',notice:'沪发改投〔2016〕70号适用于上海市市级建设财力项目，不是所有上海建设项目的通用收费标准。用户提供文件为 2016 年口径，当前使用前应核对项目批复及新规。',source:'上海市发展改革委、市财政局《上海市市级建设财力项目部分专业服务费用支出标准管理规定》（沪发改投〔2016〕70号）。',url:'https://sjc.shiep.edu.cn/4c/dc/c206a216284/page.htm'},
+      shanghai2025:{summary:'上海市级建设财力项目（现行）',hint:'市级建设财力项目代建管理费：可研批复投资，含建安、其他费用及预备费，非代建内容不计。',label:'上海市级代建管理费',notice:'2025年上海市级代理建设管理办法已更新代建管理费表，适用于市级建设财力投资项目；其他政府性资金投资项目可参照执行，但不能自动等同于普遍市场收费。',source:'上海市发展改革委、市财政局《上海市市级建设财力项目代理建设管理办法》（沪发改规范〔2025〕12号）。',url:'https://fgw.sh.gov.cn/fgw_gfxwj/20251210/4c1383b9528440e0b1a410ef5e3c4cab.html'},
+      pudong2012:{summary:'浦东新区政府投资项目代建口径',hint:'总投资用于选档；工程管理费按建安费计，前期动拆迁费另按前期费率计。',label:'浦东新区代建管理费',notice:'浦东 2012 年文件是区级历史文件，文件注明新规发布前的项目仍按原标准执行；新项目应先核对浦东新区现行政府投资项目管理及财政审核口径。',source:'用户提供：《关于印发〈浦东新区政府投资项目代建单位管理费计费标准〉的通知》（沪浦发改投〔2012〕338号）。',url:''}
+    };
+    function progressive(value, bands, fixedBelow){
+      if(value<=0)return 0;
+      if(fixedBelow && value<=fixedBelow.limit)return fixedBelow.amount;
+      let total=fixedBelow?fixedBelow.amount:0, prev=fixedBelow?fixedBelow.limit:0;
+      for(const band of bands){const upper=band[0];const rate=band[1];if(value>prev){total+=(Math.min(value,upper)-prev)*rate/100;}if(value<=upper)return total;prev=upper;}
+      const last=bands[bands.length-1];return total+(value-prev)*last[1]/100;
+    }
+    function interpolate(value, points){
+      if(value<points[0][0])return points[0][0]===1000?null:points[0][1];
+      if(value>=points[points.length-1][0])return points[points.length-1][1];
+      for(let i=1;i<points.length;i++){if(value<=points[i][0]){const [x1,y1]=points[i-1],[x2,y2]=points[i];return y1+(value-x1)*(y2-y1)/(x2-x1);}}
+      return points[points.length-1][1];
+    }
+    const pudongRates={municipal:[[500,3],[1000,2.88],[5000,2.34],[10000,1.8],[50000,1.35],[100000,.9],[200000,.75]],bridge:[[1000,3.17],[5000,2.57],[10000,1.98],[50000,1.49],[100000,.99],[200000,.83]],green:[[500,3],[1000,2.59],[5000,2.11],[10000,1.62],[50000,1.22],[100000,.72],[200000,.60]]};
+    function calculate(){
+      const mode=$('basis').value, investment=Number($('investment').value)||0, stage=Number($('stage').value)||100;
+      let amount=0, detail='请输入项目计费基数。', notice=basisInfo[mode].notice;
+      $('stageField').classList.toggle('hidden',mode!=='pudong2012');$('pudongInputs').classList.toggle('hidden',mode!=='pudong2012');
+      if(mode==='central'){
+        amount=progressive(investment,[[1000,2],[5000,1.5],[10000,1.2],[50000,1],[100000,.8],[Infinity,.4]]);
+        detail=investment?`按差额定率累进：计费基数 ${investment.toFixed(2)} 万元，控制数 ${amount.toFixed(2)} 万元。`:detail;
+      }else if(mode==='shanghai2016'){
+        amount=progressive(investment,[[1000,1.5],[5000,1.2],[10000,1],[50000,.8],[100000,.5],[200000,.2],[Infinity,.1]]);
+        detail=investment?`按 2016 年上海市级代建管理费累进表：${investment.toFixed(2)} 万元 → ${amount.toFixed(2)} 万元。`:detail;
+      }else if(mode==='shanghai2025'){
+        amount=progressive(investment,[[5000,1.8],[10000,1.5],[50000,1.2],[100000,.75],[200000,.3],[Infinity,.15]],{limit:1000,amount:23});
+        detail=investment?`按 2025 年上海市级现行表：${investment.toFixed(2)} 万元 → ${amount.toFixed(2)} 万元。1000 万元以下按 23 万元控制。`:detail;
+      }else{
+        const category=$('pudongCategory').value, engineering=Number($('engineeringPart').value)||0, relocation=Number($('relocationPart').value)||0, relocationStage=Number($('relocationStage').value)||100, rate=interpolate(investment,pudongRates[category]);
+        const relocationRate=investment<=50000?1:.8;
+        if(investment>0 && rate===null){notice='浦东 338 号文对“大型桥梁、建筑”500 万元以下未列具体费率，本次不擅自外推；请按项目批复或主管部门口径确认。';detail='当前项目总投资落在浦东文件未给出费率的区间。';amount=0;}else if(investment>0){const engineeringFee=engineering*rate/100, relocationFee=relocation*relocationRate/100;const engineeringStageFee=engineeringFee*stage/100, relocationStageFee=relocationFee*relocationStage/100;amount=engineeringStageFee+relocationStageFee;detail=`管理费率约 ${rate.toFixed(3)}%；建安费管理费 ${engineeringFee.toFixed(2)} 万元 × ${stage}% = ${engineeringStageFee.toFixed(2)} 万元；前期动拆迁管理费 ${relocationFee.toFixed(2)} 万元 × ${relocationStage}% = ${relocationStageFee.toFixed(2)} 万元。`;if(engineering===0&&relocation===0){notice='已确定费率，但尚未填写“建安费”或“前期动拆迁费用”，所以结果为0。请至少填写一项实际费用基数。';}}
+      }
+      $('amount').innerHTML=`${amount.toFixed(2)} <small>万元</small>`;$('resultLabel').textContent=basisInfo[mode].label;$('breakdown').innerHTML=detail;$('notice').textContent=notice;$('investmentHint').textContent=basisInfo[mode].hint;$('basisSummary').textContent=basisInfo[mode].summary;$('source').innerHTML=`依据：${basisInfo[mode].source} ${basisInfo[mode].url?`<a href="${basisInfo[mode].url}" target="_blank" rel="noopener">查看公开文件 ↗</a>`:''}`;renderTable(mode);
+    }
+    function renderTable(mode){const table=$('rateTable');if(mode==='pudong2012'){table.innerHTML='<tr><th>项目类别</th><th>500万</th><th>1000万</th><th>5000万</th><th>10000万</th><th>50000万</th><th>100000万</th><th>200000万及以上</th></tr>'+[['基本市政基础设施','3.00%','2.88%','2.34%','1.80%','1.35%','0.90%','0.75%'],['大型桥梁、建筑','—','3.17%','2.57%','1.98%','1.49%','0.99%','0.83%'],['园林绿化、信息化','3.00%','2.59%','2.11%','1.62%','1.22%','0.72%','0.60%']].map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('');return;}table.innerHTML='<tr><th>投资档位（万元）</th><th>费率／控制数</th></tr>'+rateRows[mode].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');}
+    ['basis','investment','stage','pudongCategory','engineeringPart','relocationPart','relocationStage'].forEach(id=>$(id).addEventListener('input',calculate));
+    $('basis').addEventListener('change',calculate);$('stage').addEventListener('change',calculate);$('relocationStage').addEventListener('change',calculate);calculate();
+  </script>
+</body>
+</html>
